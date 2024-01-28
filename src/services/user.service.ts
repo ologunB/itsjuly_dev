@@ -155,7 +155,7 @@ class UserService {
         if (country_code) query.country_code = country_code;
 
         console.log(query);
-        const pageSize = 2;
+        const pageSize = 20;
         page = (page || '1') as string;
         const pageNumber = parseInt(page, 10);
 
@@ -165,8 +165,7 @@ class UserService {
             likes: 0,
             verification_code: 0,
             forgot_password_code: 0
-        }).skip(offset) // Skip documents for pagination
-            .limit(pageSize);
+        }).skip(offset).limit(pageSize);
     }
 
 

@@ -6,51 +6,66 @@ const createCommunitySchema = Joi.object({
         "any.required": "Title is required",
         "string.empty": "Title cannot be empty",
     }),
-    tag_todo: Joi.string().required().messages({
-        "any.required": "Todo is required",
-        "string.empty": "Todo cannot be empty",
-    }),
-    location: Joi.string().required().messages({
-        "any.required": "Location is required",
-        "string.empty": "Location cannot be empty",
-    }),
     description: Joi.string().required().messages({
         "any.required": "Description is required",
         "string.empty": "Description cannot be empty",
+    }),
+    tag_todo: Joi.string().required().messages({
+        "any.required": "Todo is required",
+        "string.empty": "Todo cannot be empty",
     }),
     time: Joi.date().required().messages({
         "any.required": "Time is required",
         "string.pattern.base": "Time is not a valid Date Object",
     }),
-    max_families: Joi.number().required().messages({
+
+    location: Joi.string().required().messages({
+        "any.required": "Location is required",
+        "string.empty": "Location cannot be empty",
+    }),
+    coordinates: Joi.string()
+        .pattern(/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/).required().messages({
+            "any.required": "Coordinates is required",
+            "string.empty": "Coordinates is needed",
+        }),
+    max_families: Joi.string().required().messages({
         "any.required": "Max families is required",
         "string.empty": "Max families cannot be empty",
     }),
 });
 
 const updateCommunitySchema = Joi.object({
-    tag_todo: Joi.string().required().messages({
-        "any.required": "Todo is required",
-        "string.empty": "Todo cannot be empty",
+    title: Joi.string().messages({
+        "any.required": "Title is required",
+        "string.empty": "Title cannot be empty",
     }),
-    location: Joi.string().required().messages({
-        "any.required": "Location is required",
-        "string.empty": "Location cannot be empty",
-    }),
-    description: Joi.string().required().messages({
+    description: Joi.string().messages({
         "any.required": "Description is required",
         "string.empty": "Description cannot be empty",
     }),
-    time: Joi.date().required().messages({
+    tag_todo: Joi.string().messages({
+        "any.required": "Todo is required",
+        "string.empty": "Todo cannot be empty",
+    }),
+    location: Joi.string().messages({
+        "any.required": "Location is required",
+        "string.empty": "Location cannot be empty",
+    }),
+    coordinates: Joi.string()
+        .pattern(/^-?\d+(\.\d+)?,-?\d+(\.\d+)?$/).messages({
+            "any.required": "Coordinates is required",
+            "string.empty": "Coordinates is needed",
+        }),
+    time: Joi.date().messages({
         "any.required": "Time is required",
         "string.pattern.base": "Time is not a valid Date Object",
     }),
-    max_families: Joi.number().required().messages({
+    max_families: Joi.number().messages({
         "any.required": "Max families is required",
         "string.empty": "Max families cannot be empty",
     }),
-});
 
+});
 
 const checkIDSchema = Joi.object({
     communityId: Joi.string()

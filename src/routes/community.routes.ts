@@ -4,6 +4,7 @@ import {isAuthenticated} from "../middlewares/auth.middleware";
 
 import CommunityValidation from "../validation/community.validation";
 import CommunityController from "../controllers/community.controller";
+import {uploadImage} from "../middlewares/fileUpload";
 
 const communityRouter = express.Router();
 
@@ -17,6 +18,7 @@ communityRouter.get(
 communityRouter.post(
     "/create",
     isAuthenticated,
+    uploadImage,
     CommunityValidation.createCommunityValidation,
     CommunityController.addCommunity
 );

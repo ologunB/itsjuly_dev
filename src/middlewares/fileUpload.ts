@@ -3,7 +3,7 @@ import {Request} from "express";
 import {BadRequestError} from "../utils/error";
 
 const imageFilter = (
-    req: Request,
+    _req: Request,
     file: Express.Multer.File,
     cb: FileFilterCallback
 ): void => {
@@ -19,33 +19,6 @@ const imageFilter = (
             `Invalid Image/pdf; accepted images/pdf are: ${allowedImageTypes.join(
                 ", "
             )}`
-        )
-    );
-};
-
-const videoFilter = (
-    req: Request,
-    file: Express.Multer.File,
-    cb: FileFilterCallback
-): void => {
-    const allowedVideoTypes: string[] = [
-        "mp4",
-        "avi",
-        "mov",
-        "mkv",
-        "3gp",
-        "webm",
-    ];
-
-    for (let mime of allowedVideoTypes) {
-        if (file.mimetype.includes(mime)) {
-            return cb(null, true);
-        }
-    }
-
-    cb(
-        new BadRequestError(
-            `Invalid Video; accepted videos are: ${allowedVideoTypes.join(", ")}`
         )
     );
 };
@@ -73,12 +46,4 @@ const uploadMultipleImage = multer({
     {name: "image_4", maxCount: 1},
 ]);
 
-const uploadVideo = multer({
-    storage: storage,
-    fileFilter: videoFilter,
-    limits: {
-        fileSize: 1024 * 1024 * 1000, // 1000MB
-    },
-}).single("video");
-
-export {uploadImage, uploadVideo, uploadMultipleImage};
+export {uploadImage, uploadMultipleImage};

@@ -1,13 +1,13 @@
 import * as bcrypt from "bcryptjs";
 import {Response} from "express";
-import {UploadApiResponse, v2 as cloudinary} from "cloudinary";
 import UserService from "../services/user.service"; // Adjust the path accordingly
 import UtilsData from "../utils/data"; // Adjust the path accordingly
 import {errorResponse, successResponse} from "../utils/response.handler";
 import {IUserDocument} from "../models/UserSchema";
 import {Request} from "../models/express";
-import {generateOTP} from "../utils/helpers";
+import {generateOTP, uploadImage} from "../utils/helpers";
 import {sendSMS} from "../utils/sms";
+import {StatusCodes} from "http-status-codes";
 
 class UserController {
     async updateProfileImage(req: Request, res: Response) {
@@ -25,17 +25,8 @@ class UserController {
                     // Check if the provided name is in the array of valid names
                     if (!['image_1', 'image_2', 'image_3', 'image_4'].includes(gFiles[0].fieldname)) continue;
 
-                    const result: UploadApiResponse = await new Promise((resolve, reject) => {
-                        cloudinary.uploader
-                            .upload_stream(
-                                {resource_type: "auto"}, // 'auto' will auto detect if it's an image, video, etc.
-                                (error, output) => {
-                                    if (error || !output) reject(error);
-                                    else resolve(output);
-                                }
-                            )
-                            .end(gFiles[0].buffer);
-                    });
+                    const result = await uploadImage(gFiles[0].buffer);
+
                     if (!result) {
                         return errorResponse({message: 'Failed to upload image.', res});
                     }
@@ -156,7 +147,7 @@ class UserController {
             //  const token = await UserService.authenticate(userDetails.password, user);
             user.password = undefined;
             user.verification_code = undefined;
-            successResponse({message: "User created", data: user, res});
+            successResponse({message: "User created", data: user, res, status: StatusCodes.CREATED});
         } catch (error) {
             if (error instanceof Error)
                 errorResponse({message: error.message, res});

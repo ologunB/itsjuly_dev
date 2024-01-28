@@ -5,7 +5,7 @@ import {parseLocation} from "../utils/helpers";
 
 class CommunityService {
     async getCommunityById(communityId: string): Promise<ICommunityDocument> {
-        const community = await CommunityModel.findById(communityId);
+        const community = await CommunityModel.findById(communityId).populate('creator');
         if (!community) {
             throw new NotFoundError("Community not found");
         }
@@ -13,23 +13,31 @@ class CommunityService {
     }
 
     async createCommunity(payload: ICommunityDocument): Promise<ICommunityDocument> {
+
         return await CommunityModel.create({...payload});
     }
 
-    async updateCommunity(communityId: string, updatedData: Partial<ICommunityDocument>) {
-        await this.getCommunityById(communityId);
-
-        return CommunityModel.findByIdAndUpdate(communityId, updatedData, {new: true});
+    async updateCommunity(req: Request) {
+        const {communityId} = req.params;
+        const data = req.body;
+        const gotten = await this.getCommunityById(communityId);
+        if (gotten.creator._id != req.userId) {
+            throw new NotFoundError("You dont have permission to update community");
+        }
+        return CommunityModel.findByIdAndUpdate(communityId, data, {new: true});
     }
 
-    async deleteCommunity(communityId: string) {
-        await this.getCommunityById(communityId);
-
+    async deleteCommunity(req: Request) {
+        const {communityId} = req.params;
+        const gotten = await this.getCommunityById(communityId);
+        if (gotten.creator._id != req.userId) {
+            throw new NotFoundError("You dont have permission to update community");
+        }
         return CommunityModel.findByIdAndDelete(communityId);
     }
 
     async getCommunities(req: Request): Promise<ICommunityDocument[]> {
-        let {languages, location, todo} = req.query;
+        let {languages, location, todo, page} = req.query;
         const query: any = {};
         if (languages) {
             languages = (languages || '') as string;
@@ -68,23 +76,36 @@ class CommunityService {
         }
 
         console.log(query);
-        return CommunityModel.find(query, {new: true});
+        const pageSize = 20;
+        page = (page || '1') as string;
+        const pageNumber = parseInt(page, 10);
+
+        const offset = (pageNumber - 1) * pageSize;
+        return CommunityModel.find(query, {
+            password: 0,
+            verification_code: 0,
+            forgot_password_code: 0
+        }).skip(offset).limit(pageSize).populate('creator');
     }
 
 
     async joinCommunity(req: Request): Promise<boolean> {
         const {communityId} = req.params;
-
-        await this.getCommunityById(communityId);
-        await CommunityModel.findByIdAndUpdate(communityId, {$addToSet: {likes: req.userId}}, {new: true});
+        const gotten = await this.getCommunityById(communityId);
+        if (gotten.creator._id == req.userId) {
+            throw new NotFoundError("You cant join/leave your own community");
+        }
+        await CommunityModel.findByIdAndUpdate(communityId, {$addToSet: {members: req.userId}}, {new: true});
         return true;
     }
 
     async leaveCommunity(req: Request): Promise<boolean> {
         const {communityId} = req.params;
-
-        await this.getCommunityById(communityId);
-        await CommunityModel.findByIdAndUpdate(communityId, {$pull: {likes: req.userId}}, {new: true});
+        const gotten = await this.getCommunityById(communityId);
+        if (gotten.creator._id == req.userId) {
+            throw new NotFoundError("You cant join/leave your own community");
+        }
+        await CommunityModel.findByIdAndUpdate(communityId, {$pull: {members: req.userId}}, {new: true});
         return true;
     }
 }

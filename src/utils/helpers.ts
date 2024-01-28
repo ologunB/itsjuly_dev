@@ -1,5 +1,6 @@
 import {NextFunction, Response} from "express";
 import {Request} from "../models/express";
+import {UploadApiResponse, v2 as cloudinary} from "cloudinary";
 
 export const generateOTP = (numDigits = 4) => {
     if (numDigits <= 0) {
@@ -33,4 +34,22 @@ export function parseLocation(location: string): string[] | undefined {
         }
     }
     return undefined;
+}
+
+export async function uploadImage(chunk: Express.Multer.File): Promise<UploadApiResponse> {
+    const result: UploadApiResponse = await new Promise((resolve, reject) => {
+        cloudinary.uploader
+            .upload_stream(
+                {resource_type: "auto"}, // 'auto' will auto detect if it's an image, video, etc.
+                (error, output) => {
+                    if (error || !output) reject(error);
+                    else resolve(output);
+                }
+            )
+            .end(chunk.buffer);
+    });
+    if (!result) {
+        throw Error('Failed to upload image.');
+    }
+    return result;
 }

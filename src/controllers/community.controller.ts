@@ -3,7 +3,7 @@
 import {Response} from "express";
 import {successResponse} from "../utils/response.handler";
 import {Request} from "../models/express";
-import {catchAsync} from "../utils/helpers";
+import {catchAsync, parseLocation, uploadImage} from "../utils/helpers";
 import CommunityService from "../services/community.service";
 
 class CommunityController {
@@ -13,30 +13,33 @@ class CommunityController {
     });
 
     addCommunity = catchAsync(async (req: Request, res: Response) => {
-        const community = await CommunityService.createCommunity({
-            ...req.body,
-            user: req.user,
-        });
+        const file = req.file as Express.Multer.File;
+
+        if (!file || file.fieldname !== 'image') {
+            throw new Error("Please add file and the right format for upload");
+        }
+        const result = await uploadImage(file);
+        req.body.image = [result.secure_url];
+        let creator = req.user!;
+        creator.password = undefined;
+        creator.forgot_password_code = undefined;
+        req.body.creator = creator;
+        req.body.coordinates = {
+            type: 'Point', coordinates: parseLocation(req.body.coordinates)
+        }
+
+        const community = await CommunityService.createCommunity(req.body);
 
         return successResponse({message: "Community created successfully", data: community, res});
     });
 
     updateCommunity = catchAsync(async (req: Request, res: Response) => {
-        const {communityId} = req.params;
-        const data = req.body;
-        const community = await CommunityService.updateCommunity(
-            communityId as string,
-            data
-        );
+        const community = await CommunityService.updateCommunity(req);
         return successResponse({message: "Community updated successfully", data: community, res});
     });
     deleteCommunity = catchAsync(async (req: Request, res: Response) => {
-        const {communityId} = req.params;
-
-        const community = await CommunityService.deleteCommunity(
-            communityId as string
-        );
-        return successResponse({message: "Community deleted successfully", data: community, res});
+        await CommunityService.deleteCommunity(req);
+        return successResponse({message: "Community deleted successfully", res});
     });
 
     joinCommunity = catchAsync(async (req: Request, res: Response) => {

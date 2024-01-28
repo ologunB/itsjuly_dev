@@ -1,4 +1,5 @@
 import mongoose, {Document, Schema} from "mongoose";
+import {IUserDocument} from "./UserSchema";
 
 interface ICommunity {
     title: string;
@@ -10,16 +11,16 @@ interface ICommunity {
         coordinates: [number, number]; // [longitude, latitude]
     },
     time: Date;
-    max_families: number;
+    max_families: string;
     image: string[];
-    user: IMember;
-    members?: IMember[];
+    creator: IUserDocument;
+    members?: IUserDocument[];
 }
 
 export interface IMember {
-    first_name: string;
+    images: [];
     last_name: string;
-    id: string;
+    _id: string;
 }
 
 const communitySchema = new Schema<ICommunityDocument>(
@@ -28,6 +29,7 @@ const communitySchema = new Schema<ICommunityDocument>(
         tag_todo: {type: String},
         location: {type: String},
         description: {type: String},
+        image: {type: [String]},
         coordinates: {
             type: {
                 type: String,
@@ -40,8 +42,8 @@ const communitySchema = new Schema<ICommunityDocument>(
             }
         },
         time: {type: Date},
-        max_families: {type: Number},
-        user: {type: mongoose.Types.ObjectId, ref: "User"},
+        max_families: String,
+        creator: {type: mongoose.Types.ObjectId, ref: "User"},
         members: [
             {
                 type: mongoose.Types.ObjectId,

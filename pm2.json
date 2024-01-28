@@ -1,0 +1,13 @@
+{
+  "apps": [
+    {
+      "name": "itsjuly-dev-backend",
+      "script": "./dist/server.js",
+      "instances": "2",
+      "exec_mode": "cluster",
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  ]
+}

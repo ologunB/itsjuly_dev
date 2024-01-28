@@ -1,0 +1,24 @@
+"use strict";
+// user.routes.ts
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const user_controller_1 = __importDefault(require("../controllers/user.controller")); // Adjust the path accordingly
+const user_validation_1 = __importDefault(require("../validation/user.validation"));
+const auth_middleware_1 = require("../middlewares/auth.middleware");
+const fileUpload_1 = require("../middlewares/fileUpload");
+const userRouter = express_1.default.Router();
+userRouter.post("/register", user_validation_1.default.registrationValidation, user_controller_1.default.startRegistration);
+userRouter.post("/resend/otp", user_validation_1.default.sendForgotPasswordValidation, user_controller_1.default.resendOTP);
+userRouter.post("/verify/otp", user_validation_1.default.verifyOTPValidation, user_controller_1.default.verifyOTP);
+userRouter.post("/forgot-password/send", user_validation_1.default.sendForgotPasswordValidation, user_controller_1.default.sendForgotPassword);
+userRouter.post("/forgot-password/verify", user_validation_1.default.verifyForgotPasswordValidation, user_controller_1.default.verifyForgotPassword);
+userRouter.post("/forgot-password/reset", user_validation_1.default.resetForgotPasswordValidation, user_controller_1.default.resetForgotPassword);
+userRouter.post("/login", user_validation_1.default.loginValidation, user_controller_1.default.login);
+userRouter.get("/profile", auth_middleware_1.isAuthenticated, user_controller_1.default.getProfile);
+userRouter.post("/change-password", auth_middleware_1.isAuthenticated, user_validation_1.default.changePasswordValidation, user_controller_1.default.changePassword);
+userRouter.put("/update-images", auth_middleware_1.isAuthenticated, fileUpload_1.uploadImage, user_controller_1.default.updateProfileImage);
+userRouter.put("/update-profile", auth_middleware_1.isAuthenticated, user_validation_1.default.updateProfileSchema, user_controller_1.default.updateProfile);
+exports.default = userRouter;

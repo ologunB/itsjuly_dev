@@ -51,8 +51,10 @@ const updateAccountSchema = Joi.object({
     tags_are: Joi.array().items(Joi.string()),
     tags_love: Joi.array().items(Joi.string()),
     description: Joi.string(),
-    latitude: Joi.number(),
-    longitude: Joi.number(),
+    coordinates: Joi.array().items(
+        Joi.number(),
+        Joi.number()
+    ).length(2).required(),
     country_code: Joi.string(),
 });
 
@@ -61,7 +63,13 @@ const deleteAccountSchema = Joi.object({
 });
 
 const likeUserSchema = Joi.object({
-    id: Joi.string().required(),
+    id: Joi.string()
+        .pattern(/^[0-9a-fA-F]{24}$/)
+        .required()
+        .messages({
+            "any.required": "User ID is required",
+            "string.pattern.base": "User ID is not a valid ObjectID",
+        }),
     like: Joi.boolean().required()
 });
 

@@ -4,7 +4,7 @@ import {IUser, IUserDocument, UserModel,} from "../models/UserSchema";
 import bcrypt from "bcryptjs";
 import {NotFoundError} from "../utils/error";
 import {generateToken} from "../utils/jwt.utils";
-import {generateOTP} from "../utils/helpers";
+import {generateOTP, parseLocation} from "../utils/helpers";
 import {sendSMS} from "../utils/sms";
 import {Request} from "../models/express";
 
@@ -17,9 +17,7 @@ class UserService {
 
     async getUserById(_id: string) {
         const user = (await UserModel.findById(_id, {likes: 0})) as IUserDocument;
-        console.log(1);
         if (!user) throw new NotFoundError("User Not Found");
-        console.log(2);
         return user;
     }
 
@@ -63,16 +61,19 @@ class UserService {
 
     updateUser(req: Request) {
         const userId = req.userId!;
-        return UserModel.findOneAndUpdate({_id: userId}, {$set: {...req.body}}, {new: true});
+        let data = req.body;
+        if (data.coordinates) {
+            data.coordinates = {
+                type: 'Point', coordinates: data.coordinates
+            };
+        }
+        return UserModel.findOneAndUpdate({_id: userId}, {$set: {...data}}, {new: true});
     }
 
     async likeUser(req: Request): Promise<boolean> {
         const {id, like} = req.body;
         const liker = req.userId!;
-        const user = await this.getUserById(id);
-        console.log(3);
-        if (!user) throw new NotFoundError("User Not Found");
-        console.log(4);
+        await this.getUserById(id);
 
         // const user = await UserModel.findOne({_id: id}, {likes: liker});
         if (like) {
@@ -118,7 +119,7 @@ class UserService {
     }
 
     async getUsers(req: Request) {
-        let {languages, location, parents, country_code} = req.query;
+        let {languages, location, parents, country_code, page} = req.query;
         const query: any = {};
         if (languages) {
             languages = (languages || '') as string;
@@ -126,18 +127,8 @@ class UserService {
             query.languages = {$in: languagesArray};
         }
         if (location) {
-            let parsed: string[] | undefined = this.parseLocation(location as string);
-            if (parsed) {
-                query.location = {
-                    $near: {
-                        $geometry: {
-                            type: "Point",
-                            coordinates: [parsed[0], parsed[1]]
-                        },
-                        $maxDistance: 1000
-                    }
-                }
-            } else if (location == 'around-me') {
+            let parsed: string[] | undefined = parseLocation(location as string);
+            if (location == 'around-me') {
                 const user = req.user!;
                 query.location = {
                     $near: {
@@ -148,30 +139,37 @@ class UserService {
                         $maxDistance: 1000
                     }
                 }
+            } else if (parsed) {
+                query.location = {
+                    $near: {
+                        $geometry: {
+                            type: "Point",
+                            coordinates: [parsed[0], parsed[1]]
+                        },
+                        $maxDistance: 1000
+                    }
+                }
             }
         }
         if (parents) query.parents = parents;
         if (country_code) query.country_code = country_code;
 
         console.log(query);
-        return UserModel.find(query, {new: true});
+        const pageSize = 2;
+        page = (page || '1') as string;
+        const pageNumber = parseInt(page, 10);
+
+        const offset = (pageNumber - 1) * pageSize;
+        return UserModel.find(query, {
+            password: 0,
+            likes: 0,
+            verification_code: 0,
+            forgot_password_code: 0
+        }).skip(offset) // Skip documents for pagination
+            .limit(pageSize);
     }
 
-    parseLocation(location: string): string[] | undefined {
-        // Check if location is in the format of "longitude,latitude"
-        const coords = location.split(',');
 
-        if (coords.length === 2) {
-            const longitude = parseFloat(coords[0]);
-            const latitude = parseFloat(coords[1]);
-
-            // Check if both longitude and latitude are valid numbers
-            if (!isNaN(longitude) && !isNaN(latitude)) {
-                return coords;
-            }
-        }
-        return undefined;
-    }
 }
 
 export default new UserService();

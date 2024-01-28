@@ -2,6 +2,7 @@ import * as bcrypt from "bcryptjs";
 import {Response} from "express";
 import {UploadApiResponse, v2 as cloudinary} from "cloudinary";
 import UserService from "../services/user.service"; // Adjust the path accordingly
+import UtilsData from "../utils/data"; // Adjust the path accordingly
 import {errorResponse, successResponse} from "../utils/response.handler";
 import {IUserDocument} from "../models/UserSchema";
 import {Request} from "../models/express";
@@ -275,10 +276,10 @@ class UserController {
         }
     }
 
-    async getUtils(req: Request, res: Response) {
+    async getUtils(_req: Request, res: Response) {
         try {
             const data = {
-                'loves': {}, 'ares': {}, languages: {}
+                loves: UtilsData.loves, ares: UtilsData.are, languages: UtilsData.languages
             };
             successResponse({res, message: "Utils retrieved", data: data});
         } catch (error) {

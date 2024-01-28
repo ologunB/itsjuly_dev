@@ -68,7 +68,7 @@ const userSchema = new Schema<IUserDocument>(
             coordinates: {
                 type: [Number],
                 required: true
-            }
+            },
         },
         country_code: String,
         email: {type: String, required: true},

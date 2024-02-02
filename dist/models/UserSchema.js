@@ -23,96 +23,61 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserModel = exports.userProjectionMin = exports.userProjection = exports.UserGender = exports.UserAgeGroup = exports.UserRole = void 0;
+exports.UserModel = exports.UserGender = exports.UserRole = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 var UserRole;
 (function (UserRole) {
     UserRole["User"] = "User";
     UserRole["Admin"] = "Admin";
-    UserRole["SuperAdmin"] = "Super_Admin";
-    UserRole["Family"] = "Family";
-    UserRole["Volunteers"] = "Volunteers";
 })(UserRole || (exports.UserRole = UserRole = {}));
-var UserAgeGroup;
-(function (UserAgeGroup) {
-    UserAgeGroup["18-25"] = "18-25";
-    UserAgeGroup["26-35"] = "26-35";
-    UserAgeGroup["36-45"] = "36-45";
-    UserAgeGroup["46-55"] = "46-55";
-    UserAgeGroup["56-65"] = "56-65";
-    UserAgeGroup["66-75"] = "66-75";
-    UserAgeGroup["76-85"] = "76-85";
-    UserAgeGroup["86-95"] = "86-95";
-    UserAgeGroup["96-105"] = "96-105";
-})(UserAgeGroup || (exports.UserAgeGroup = UserAgeGroup = {}));
 var UserGender;
 (function (UserGender) {
     UserGender["male"] = "male";
     UserGender["female"] = "female";
 })(UserGender || (exports.UserGender = UserGender = {}));
 const userSchema = new mongoose_1.Schema({
-    username: { type: String },
-    first_name: { type: String },
-    last_name: { type: String },
-    email: { type: String },
-    phone_number: { type: String },
-    verification_code: { type: String },
-    forgot_password_code: { type: String },
-    is_verified: { type: Boolean, default: false },
-    age_group: { type: String },
-    locked: { type: Boolean, default: false },
-    date_of_birth: Date,
+    first_name: String,
+    last_name: String,
+    parents: String,
+    children: {
+        type: [new mongoose_1.Schema({
+                dob: { type: Date, required: true },
+                gender: { type: String, enum: ['male', 'female'], required: true }
+            })],
+        default: undefined
+    },
+    location: String,
+    images: { type: [], default: undefined },
+    languages: { type: [String], default: undefined },
+    tags_are: { type: [String], default: undefined },
+    tags_love: { type: [String], default: undefined },
+    likes: { type: [String], default: undefined },
+    description: String,
+    coordinates: {
+        type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point'
+        },
+        coordinates: {
+            type: [Number],
+            required: true
+        },
+    },
+    country_code: String,
+    email: { type: String, required: true },
+    password: { type: String },
     role: {
         type: String,
         enum: UserRole,
         default: UserRole.User,
     },
-    bio: String,
-    password: String,
-    gender: {
-        type: String,
-        enum: UserGender,
-    },
-    address: String,
-    city: String,
-    state: String,
-    zip: String,
-    church_location: String,
-    profile_image: {
-        public_id: String,
-        url: String,
-    },
+    is_verified: { type: Boolean, default: false },
+    locked: { type: Boolean, default: false },
+    verification_code: String,
+    forgot_password_code: String
 }, {
     timestamps: true, versionKey: false
 });
-exports.userProjection = {
-    username: true,
-    first_name: true,
-    last_name: true,
-    email: true,
-    phone_number: true,
-    is_verified: true,
-    age_group: true,
-    role: true,
-    bio: true,
-    gender: true,
-    address: true,
-    city: true,
-    state: true,
-    zip: true,
-    church_location: true,
-    profile_image: true,
-};
-exports.userProjectionMin = {
-    username: true,
-    first_name: true,
-    last_name: true,
-    state: true,
-    profile_image: true,
-    email: true,
-    phone_number: true,
-    gender: true,
-    _id: true,
-};
 const UserModel = mongoose_1.default.model("User", userSchema);
 exports.UserModel = UserModel;

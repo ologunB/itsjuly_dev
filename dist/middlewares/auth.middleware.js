@@ -17,7 +17,7 @@ exports.isAuthenticated = void 0;
 const jwt_utils_1 = require("../utils/jwt.utils");
 const error_1 = require("../utils/error");
 const user_service_1 = __importDefault(require("../services/user.service"));
-const isAuthenticated = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const isAuthenticated = (req, _res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const authorizationHeader = req.headers["authorization"];
     if (!authorizationHeader) {
         return next(new error_1.UnauthorizedError("No authentication token provided."));
@@ -26,7 +26,7 @@ const isAuthenticated = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
     try {
         const decoded = (0, jwt_utils_1.verifyToken)(token);
         const userId = decoded.id;
-        const user = yield user_service_1.default.getUserById(userId, next);
+        const user = yield user_service_1.default.getUserById(userId);
         if (!user) {
             return next(new error_1.UnauthorizedError("User not found."));
         }

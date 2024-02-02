@@ -8,11 +8,73 @@ import {uploadMultipleImage} from "../middlewares/fileUpload";
 
 const userRouter = express.Router();
 
+/**
+ * @openapi
+ * '/user/register':
+ *  post:
+ *     tags:
+ *     - Users
+ *     summary: Create a user
+ *     requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *           schema:
+ *            type: object
+ *            required:
+ *              - email
+ *              - password
+ *            properties:
+ *              email:
+ *                type: string
+ *                default: johndoe@mail.com
+ *              password:
+ *                type: string
+ *                default: johnDoe20!@
+ *     responses:
+ *      201:
+ *        description: Created
+ *      409:
+ *        description: Conflict
+ *      404:
+ *        description: Not Found
+ *      500:
+ *        description: Server Error
+ */
 userRouter.post(
     "/register",
     UserValidation.registrationValidation,
     UserController.register
 );
+/**
+ * @openapi
+ * '/user/resend-otp':
+ *  post:
+ *     tags:
+ *     - Users
+ *     summary: Resend otp
+ *     requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *           schema:
+ *            type: object
+ *            required:
+ *              - email
+ *            properties:
+ *              email:
+ *                type: string
+ *                default: johndoe@mail.com
+ *     responses:
+ *      200:
+ *        description: OK
+ *      409:
+ *        description: Conflict
+ *      404:
+ *        description: Not Found
+ *      500:
+ *        description: Server Error
+ */
 userRouter.post(
     "/resend-otp",
     UserValidation.sendForgotPasswordValidation,

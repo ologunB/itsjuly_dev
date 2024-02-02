@@ -18,7 +18,6 @@ const createCommunitySchema = Joi.object({
         "any.required": "Time is required",
         "string.pattern.base": "Time is not a valid Date Object",
     }),
-
     location: Joi.string().required().messages({
         "any.required": "Location is required",
         "string.empty": "Location cannot be empty",
